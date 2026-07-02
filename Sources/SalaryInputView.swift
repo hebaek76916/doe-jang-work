@@ -15,64 +15,72 @@ struct SalaryInputView: View {
     }
 
     var body: some View {
-        VStack(spacing: 32) {
-            Spacer()
+        ZStack {
+            Kitsch.cream.ignoresSafeArea()
 
-            VStack(spacing: 8) {
-                Text("💼")
-                    .font(.system(size: 64))
-                Text("연봉을 입력해 주세요")
-                    .font(.title2.bold())
-                Text("주말·공휴일을 뺀 근무일 기준으로\n하루에 얼마 버는지 알려드려요")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
+            VStack(spacing: 28) {
+                Spacer()
 
-            HStack(spacing: 8) {
-                TextField("5,000", text: $salaryText)
-                    .keyboardType(.numberPad)
-                    .focused($focused)
-                    .font(.system(size: 40, weight: .bold, design: .rounded))
-                    .multilineTextAlignment(.trailing)
-                    .frame(maxWidth: 180)
-                Text("만원")
-                    .font(.title2.bold())
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 16)
-            .background(RoundedRectangle(cornerRadius: 20).fill(Color(.secondarySystemBackground)))
+                Text("💰")
+                    .font(.system(size: 60))
+                    .padding(22)
+                    .stickerCard(Kitsch.yellow, rotation: -4, cornerRadius: 28)
 
-            if salaryManwon > 0 {
-                VStack(spacing: 4) {
-                    Text("하루 출근하면")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Text(previewWage.wonString)
-                        .font(.title.bold())
-                        .foregroundStyle(.red)
-                        .contentTransition(.numericText())
+                VStack(spacing: 10) {
+                    Text("연봉 얼마 받음?")
+                        .font(.system(size: 28, weight: .black, design: .rounded))
+                    Text("🤫 아무한테도 말 안 함\n주말·공휴일 빼고 하루에 얼마 버는지 알려줌")
+                        .font(.system(size: 14, weight: .bold))
+                        .opacity(0.55)
+                        .multilineTextAlignment(.center)
                 }
-                .animation(.snappy, value: previewWage)
-            }
 
-            Spacer()
+                HStack(spacing: 8) {
+                    TextField("5,000", text: $salaryText)
+                        .keyboardType(.numberPad)
+                        .focused($focused)
+                        .font(.system(size: 40, weight: .black, design: .rounded))
+                        .multilineTextAlignment(.trailing)
+                        .frame(maxWidth: 170)
+                    Text("만원")
+                        .font(.system(size: 20, weight: .black))
+                        .opacity(0.5)
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 16)
+                .stickerCard(.white, rotation: 1.2)
 
-            Button {
-                store.annualSalary = salaryManwon * 10_000
-            } label: {
-                Text("시작하기")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
+                if salaryManwon > 0 {
+                    Text("하루 출근 = \(previewWage.wonString) 🤑")
+                        .font(.system(size: 18, weight: .black, design: .rounded))
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 12)
+                        .stickerCard(Kitsch.lime, rotation: -1.5, cornerRadius: 999)
+                        .contentTransition(.numericText())
+                        .animation(.snappy, value: previewWage)
+                }
+
+                Spacer()
+
+                Button {
+                    store.annualSalary = salaryManwon * 10_000
+                } label: {
+                    Text("시작하기 🚀")
+                        .font(.system(size: 19, weight: .black, design: .rounded))
+                        .foregroundStyle(.black)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                }
+                .buttonStyle(StickerButtonStyle(fill: Kitsch.pink))
+                .disabled(salaryManwon <= 0)
+                .opacity(salaryManwon > 0 ? 1 : 0.5)
+                .padding(.bottom, 20)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.red)
-            .disabled(salaryManwon <= 0)
+            .foregroundStyle(.black)
             .padding(.horizontal, 24)
-            .padding(.bottom, 16)
         }
+        .fontDesign(.rounded)
+        .preferredColorScheme(.light)
         .onAppear { focused = true }
     }
 }
