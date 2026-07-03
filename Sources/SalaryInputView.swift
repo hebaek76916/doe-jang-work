@@ -3,6 +3,8 @@ import SwiftUI
 struct SalaryInputView: View {
     @Bindable var store: StampStore
     @State private var salaryText = ""
+    @State private var workStart = WorkdayCalendar.calendar.date(from: DateComponents(hour: 9)) ?? .now
+    @State private var workEnd = WorkdayCalendar.calendar.date(from: DateComponents(hour: 18)) ?? .now
     @FocusState private var focused: Bool
 
     private var salaryManwon: Int { Int(salaryText) ?? 0 }
@@ -50,6 +52,24 @@ struct SalaryInputView: View {
                 .padding(.vertical, 16)
                 .stickerCard(.white, rotation: 1.2)
 
+                HStack(spacing: 14) {
+                    HStack(spacing: 2) {
+                        Text("출근")
+                            .font(.system(size: 14, weight: .black))
+                        DatePicker("", selection: $workStart, displayedComponents: .hourAndMinute)
+                            .labelsHidden()
+                    }
+                    HStack(spacing: 2) {
+                        Text("퇴근")
+                            .font(.system(size: 14, weight: .black))
+                        DatePicker("", selection: $workEnd, displayedComponents: .hourAndMinute)
+                            .labelsHidden()
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .stickerCard(Kitsch.pastelYellow, rotation: -0.8, cornerRadius: 16)
+
                 if salaryManwon > 0 {
                     Text("하루 출근 = \(previewWage.wonString) 🤑")
                         .font(.system(size: 18, weight: .black, design: .rounded))
@@ -63,6 +83,9 @@ struct SalaryInputView: View {
                 Spacer()
 
                 Button {
+                    let cal = WorkdayCalendar.calendar
+                    store.workStartMinutes = cal.component(.hour, from: workStart) * 60 + cal.component(.minute, from: workStart)
+                    store.workEndMinutes = cal.component(.hour, from: workEnd) * 60 + cal.component(.minute, from: workEnd)
                     store.annualSalary = salaryManwon * 10_000
                 } label: {
                     Text("시작하기 🚀")

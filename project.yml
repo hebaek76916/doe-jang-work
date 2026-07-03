@@ -9,6 +9,13 @@ targets:
     platform: iOS
     sources:
       - Sources
+    dependencies:
+      - target: WorkStampWidget
+    entitlements:
+      path: WorkStamp.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.toy.workstamp
     info:
       path: Sources/Info.plist
       properties:
@@ -23,4 +30,27 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.toy.workstamp
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1"
-        CODE_SIGNING_ALLOWED: "NO"
+  WorkStampWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - WidgetSources
+      - Sources/Shared
+    entitlements:
+      path: WorkStampWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.toy.workstamp
+    info:
+      path: WidgetSources/Info.plist
+      properties:
+        CFBundleDisplayName: 출근도장
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.toy.workstamp.widget
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1"
