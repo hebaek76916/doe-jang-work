@@ -19,7 +19,7 @@
 ## 빠른 시작 (CLI)
 
 ```bash
-pip install ./cli
+pipx install ./cli
 workstamp init --salary 5000    # 연봉 5,000만원
 workstamp                       # 돈 오르는 거 구경
 ```

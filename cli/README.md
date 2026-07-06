@@ -15,17 +15,17 @@
 ## 설치
 
 ```bash
-# pipx 권장 (파이썬 환경 안 더럽힘)
+# pipx 권장 — 요즘 macOS/리눅스에서 pip은 PEP 668로 막혀 있음
+brew install pipx && pipx ensurepath
 pipx install workstamp
 
-# 또는 pip
-pip install workstamp
-
 # PyPI 배포 전이라면 저장소에서 직접:
-git clone <repo-url> && pip install ./WorkStamp/cli
+git clone <repo-url> && pipx install ./WorkStamp/cli
 ```
 
-파이썬 3.9+ 만 있으면 됩니다.
+파이썬 3.9+ 만 있으면 됩니다. 설치 후 `command not found`가 뜨면 새 터미널을 여세요 (`ensurepath`가 PATH에 등록한 게 새 셸부터 반영됨).
+
+> `pip install` 하다가 `error: externally-managed-environment`를 만났다면 — 그게 바로 pipx를 쓰라는 뜻입니다. `pipx install --python python3.12 ...`처럼 파이썬 버전을 지정할 수도 있어요.
 
 ## 30초 시작
 
