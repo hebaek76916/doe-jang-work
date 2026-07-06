@@ -21,6 +21,9 @@
 | キッチュ 🎀 | マトリックス 🖥️ |
 |:---:|:---:|
 | <img src="docs/screenshots/ios-kitsch.png" width="280"> | <img src="docs/screenshots/ios-matrix.png" width="280"> |
+| <img src="docs/screenshots/mac-kitsch.png" width="360"> | <img src="docs/screenshots/mac-matrix.png" width="360"> |
+
+*(上のMacスクリーンショットは実際に日本語ロケールで撮影 — 国を切り替えると言語・通貨・祝日が一括で変わります)*
 
 テーマ3種（キッチュ／フォーマル／マトリックス）＋ **シークレットモード 🕶️** —
 金額の下3桁だけ表示（`+•••,222`）。隣の席に年収がバレません。

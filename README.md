@@ -17,6 +17,9 @@
 | 키치 🎀 | 매트릭스 🖥️ |
 |:---:|:---:|
 | <img src="docs/screenshots/ios-kitsch.png" width="280"> | <img src="docs/screenshots/ios-matrix.png" width="280"> |
+| <img src="docs/screenshots/mac-kitsch.png" width="360"> | <img src="docs/screenshots/mac-matrix.png" width="360"> |
+
+*(위 Mac 스크린샷은 일본어 로케일 예시입니다 — 국가를 바꾸면 언어·통화·공휴일이 통째로 전환됩니다)*
 
 테마 3종(키치/포멀/매트릭스) + **시크릿 모드 🕶️** — 금액 끝 3자리만 표시해서
 옆자리에 연봉을 들키지 않습니다 (`+•••,222원` — 끝자리는 계속 바뀌어서 오르는 재미는 그대로).

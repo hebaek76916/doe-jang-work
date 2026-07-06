@@ -21,6 +21,9 @@ holidays excluded), and counts up second by second during work hours.
 | Kitsch 🎀 | Matrix 🖥️ |
 |:---:|:---:|
 | <img src="docs/screenshots/ios-kitsch.png" width="280"> | <img src="docs/screenshots/ios-matrix.png" width="280"> |
+| <img src="docs/screenshots/mac-kitsch.png" width="360"> | <img src="docs/screenshots/mac-matrix.png" width="360"> |
+
+*(the Mac screenshots above are in Japanese — switching the region flips language, currency, and holidays all at once)*
 
 Three themes (Kitsch / Formal / Matrix) + **Secret mode 🕶️** — shows only the
 last 3 digits (`+•••,222`) so your coworkers can't figure out your salary.

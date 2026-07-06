@@ -20,6 +20,9 @@
 | 可爱风 🎀 | 黑客帝国 🖥️ |
 |:---:|:---:|
 | <img src="docs/screenshots/ios-kitsch.png" width="280"> | <img src="docs/screenshots/ios-matrix.png" width="280"> |
+| <img src="docs/screenshots/mac-kitsch.png" width="360"> | <img src="docs/screenshots/mac-matrix.png" width="360"> |
+
+*（以上 Mac 截图实际使用日语界面 — 切换地区会同时改变语言·货币·节假日）*
 
 三套主题（可爱风／正式风／黑客帝国）＋ **隐身模式 🕶️** —
 只显示金额末 3 位（`+•••,222`），旁边工位永远猜不到你的年薪。

@@ -66,7 +66,9 @@ def load_json(path: Path, default):
 
 def save_json(path: Path, data):
     HOME.mkdir(parents=True, exist_ok=True)
+    os.chmod(HOME, 0o700)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2))
+    os.chmod(path, 0o600)
 
 
 def load_config():

@@ -6,3 +6,5 @@ xcuserdata/
 cli/*.egg-info/
 build-release/
 dist/*.dmg
+*.mov
+*.mp4
