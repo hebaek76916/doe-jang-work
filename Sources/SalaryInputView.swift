@@ -38,7 +38,7 @@ struct SalaryInputView: View {
                 }
 
                 HStack(spacing: 8) {
-                    TextField("5,000", text: $salaryText)
+                    TextField("1,000", text: $salaryText)
                         .keyboardType(.numberPad)
                         .focused($focused)
                         .font(.system(size: 40, weight: .black, design: .rounded))
