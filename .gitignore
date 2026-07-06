@@ -3,3 +3,4 @@ build/
 build-mac/
 *.xcodeproj
 xcuserdata/
+cli/*.egg-info/

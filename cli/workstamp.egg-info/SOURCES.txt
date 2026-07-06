@@ -1,8 +1,0 @@
-README.md
-pyproject.toml
-workstamp.py
-workstamp.egg-info/PKG-INFO
-workstamp.egg-info/SOURCES.txt
-workstamp.egg-info/dependency_links.txt
-workstamp.egg-info/entry_points.txt
-workstamp.egg-info/top_level.txt
