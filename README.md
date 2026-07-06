@@ -31,7 +31,7 @@
 
 ```bash
 brew install pipx && pipx ensurepath
-git clone https://github.com/<OWNER>/doe-jang-work.git
+git clone https://github.com/hebaek76916/doe-jang-work.git
 pipx install ./doe-jang-work/cli
 
 workstamp init --salary 5000   # 연봉 5,000만원 (만원 단위)
