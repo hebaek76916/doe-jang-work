@@ -1,42 +1,69 @@
 import SwiftUI
+import AppKit
 
 @main
 struct WorkStampMacApp: App {
-    @State private var store = StampStore()
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
     var body: some Scene {
-        MenuBarExtra {
-            MenuPopover(store: store)
-        } label: {
-            // 메뉴바에 표시되는 티커. TimelineView로 근무 중엔 초 단위 갱신.
-            MenuBarLabel(store: store)
-        }
-        .menuBarExtraStyle(.window)
+        // 창 없는 메뉴바 전용 앱. 실제 UI는 AppDelegate의 NSStatusItem이 담당.
+        Settings { EmptyView() }
     }
 }
 
-/// 메뉴바 티커 — 근무 단계에 따라 문구/금액이 실시간으로 바뀐다.
-struct MenuBarLabel: View {
-    let store: StampStore
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    private var statusItem: NSStatusItem!
+    private var popover: NSPopover!
+    private var timer: Timer?
+    private let store = StampStore()
 
-    var body: some View {
-        TimelineView(.periodic(from: .now, by: 1)) { context in
-            Text(labelText(at: context.date))
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        // 메뉴바 상태 아이템 생성 (AppKit 표준 — MenuBarExtra보다 확실히 뜬다)
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        if let button = statusItem.button {
+            button.image = NSImage(systemSymbolName: "wonsign.circle.fill", accessibilityDescription: "출근도장")
+            button.imagePosition = .imageLeading
+            button.action = #selector(togglePopover)
+            button.target = self
+        }
+        updateTitle()
+
+        // 팝오버 (키치 스티커 SwiftUI 뷰)
+        popover = NSPopover()
+        popover.behavior = .transient
+        popover.contentSize = NSSize(width: 336, height: 420)
+        popover.contentViewController = NSHostingController(rootView: MenuPopover(store: store))
+
+        // 1초마다 메뉴바 텍스트 갱신
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            self?.updateTitle()
         }
     }
 
-    private func labelText(at date: Date) -> String {
-        guard store.annualSalary > 0 else { return "💼 출근도장" }
-        let earned = store.earnedSoFar(at: date)
-        switch store.phase(at: date) {
-        case .restDay: return "🧘"
-        case .beforeWork: return "🛌 출근 전"
-        case .commuting: return "🏃 돈 벌러 가는 중"
-        case .working: return "💸 +\(earned.wonString)"
-        case .justFinished: return "🍻 다 벌었다"
-        case .settled:
-            // 퇴근 2시간 지났는데 아직 맥 앞 = 야근. 카운팅은 멈췄으니 무료봉사.
-            return "🫠 무료봉사 중"
+    private func updateTitle() {
+        statusItem.button?.title = " " + labelText
+    }
+
+    private var labelText: String {
+        guard store.annualSalary > 0 else { return "출근도장" }
+        let earned = store.earnedSoFar()
+        switch store.phase() {
+        case .restDay: return "무급 힐링"
+        case .beforeWork: return "출근 전"
+        case .commuting: return "돈 벌러 가는 중"
+        case .working: return "+\(earned.wonString)"
+        case .justFinished: return "다 벌었다"
+        case .settled: return "무료봉사 중"
+        }
+    }
+
+    @objc private func togglePopover() {
+        guard let button = statusItem.button else { return }
+        if popover.isShown {
+            popover.performClose(nil)
+        } else {
+            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            popover.contentViewController?.view.window?.makeKey()
         }
     }
 }

@@ -2,17 +2,24 @@ import SwiftUI
 
 struct MenuPopover: View {
     @Bindable var store: StampStore
+    @State private var showSettings = false
+    @State private var showCalendar = false
+    @State private var displayedMonth = WorkdayCalendar.calendar.startOfDay(for: .now)
 
     private var cal: Calendar { WorkdayCalendar.calendar }
     private var year: Int { cal.component(.year, from: .now) }
     private var month: Int { cal.component(.month, from: .now) }
+    private var displayedYear: Int { cal.component(.year, from: displayedMonth) }
+    private var displayedMonthNum: Int { cal.component(.month, from: displayedMonth) }
 
     var body: some View {
         Group {
-            if store.annualSalary > 0 {
-                dashboard
-            } else {
+            if store.annualSalary <= 0 {
                 MacOnboarding(store: store)
+            } else if showSettings {
+                MacSettings(store: store, onDone: { showSettings = false })
+            } else {
+                dashboard
             }
         }
         .frame(width: 300)
@@ -26,10 +33,19 @@ struct MenuPopover: View {
 
     private var dashboard: some View {
         VStack(spacing: 16) {
-            HStack {
+            HStack(spacing: 6) {
                 Text("💸 출근도장")
                     .font(.system(size: 18, weight: .black, design: .rounded))
                 Spacer()
+                Button {
+                    showSettings = true
+                } label: {
+                    Text("⚙️")
+                        .font(.system(size: 13))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                }
+                .buttonStyle(StickerButtonStyle(fill: .white, cornerRadius: 10))
                 Button {
                     NSApp.terminate(nil)
                 } label: {
@@ -65,8 +81,62 @@ struct MenuPopover: View {
             }
             .buttonStyle(StickerButtonStyle(fill: stampedToday ? Kitsch.pastelBlue : Kitsch.pink))
             .disabled(!store.canToggle(.now))
+
+            // 접이식 달력
+            Button {
+                withAnimation(.snappy) { showCalendar.toggle() }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(showCalendar ? "달력 접기" : "달력 펼치기 📅")
+                        .font(.system(size: 13, weight: .black, design: .rounded))
+                    Image(systemName: showCalendar ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 11, weight: .black))
+                }
+                .foregroundStyle(.black)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 9)
+            }
+            .buttonStyle(StickerButtonStyle(fill: .white, cornerRadius: 14))
+
+            if showCalendar {
+                calendarSection
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
         .foregroundStyle(.black)
+    }
+
+    private var calendarSection: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Button {
+                    moveMonth(-1)
+                } label: {
+                    Image(systemName: "chevron.left").font(.system(size: 13, weight: .black)).padding(6)
+                }
+                .buttonStyle(StickerButtonStyle(fill: Kitsch.yellow, cornerRadius: 10))
+                Spacer()
+                Text("\(String(displayedYear))년 \(displayedMonthNum)월")
+                    .font(.system(size: 15, weight: .black))
+                Spacer()
+                Button {
+                    moveMonth(1)
+                } label: {
+                    Image(systemName: "chevron.right").font(.system(size: 13, weight: .black)).padding(6)
+                }
+                .buttonStyle(StickerButtonStyle(fill: Kitsch.yellow, cornerRadius: 10))
+            }
+            CalendarGridView(store: store, month: displayedMonth)
+        }
+        .foregroundStyle(.black)
+        .padding(12)
+        .stickerCard(.white, rotation: 0.6)
+    }
+
+    private func moveMonth(_ offset: Int) {
+        if let next = cal.date(byAdding: .month, value: offset, to: displayedMonth) {
+            withAnimation(.snappy) { displayedMonth = next }
+        }
     }
 
     @ViewBuilder
@@ -189,5 +259,92 @@ struct MacOnboarding: View {
             .opacity(salaryManwon > 0 ? 1 : 0.5)
         }
         .foregroundStyle(.black)
+    }
+}
+
+/// 대시보드에서 ⚙️로 진입 — 연봉·출퇴근 시각 수정
+struct MacSettings: View {
+    @Bindable var store: StampStore
+    let onDone: () -> Void
+
+    @State private var salaryText = ""
+    @State private var workStart = Date.now
+    @State private var workEnd = Date.now
+
+    private var salaryManwon: Int { Int(salaryText) ?? 0 }
+
+    var body: some View {
+        VStack(spacing: 14) {
+            HStack {
+                Text("⚙️ 설정")
+                    .font(.system(size: 18, weight: .black, design: .rounded))
+                Spacer()
+            }
+
+            HStack(spacing: 6) {
+                Text("연봉")
+                    .font(.system(size: 13, weight: .black))
+                    .opacity(0.5)
+                TextField("1000", text: $salaryText)
+                    .textFieldStyle(.plain)
+                    .multilineTextAlignment(.trailing)
+                    .font(.system(size: 22, weight: .black, design: .rounded))
+                Text("만원")
+                    .font(.system(size: 13, weight: .black))
+                    .opacity(0.5)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .stickerCard(.white, cornerRadius: 14)
+
+            HStack(spacing: 12) {
+                DatePicker("출근", selection: $workStart, displayedComponents: .hourAndMinute)
+                DatePicker("퇴근", selection: $workEnd, displayedComponents: .hourAndMinute)
+            }
+            .font(.system(size: 12, weight: .bold))
+            .datePickerStyle(.field)
+
+            Text("주말·공휴일 빼고 하루 \(store.todayWage.wonString)")
+                .font(.system(size: 11, weight: .bold))
+                .opacity(0.45)
+
+            HStack(spacing: 10) {
+                Button {
+                    onDone()
+                } label: {
+                    Text("취소")
+                        .font(.system(size: 14, weight: .black, design: .rounded))
+                        .foregroundStyle(.black)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 11)
+                }
+                .buttonStyle(StickerButtonStyle(fill: .white, cornerRadius: 14))
+
+                Button {
+                    let cal = WorkdayCalendar.calendar
+                    store.workStartMinutes = cal.component(.hour, from: workStart) * 60 + cal.component(.minute, from: workStart)
+                    store.workEndMinutes = cal.component(.hour, from: workEnd) * 60 + cal.component(.minute, from: workEnd)
+                    if salaryManwon > 0 { store.annualSalary = salaryManwon * 10_000 }
+                    onDone()
+                } label: {
+                    Text("저장 💾")
+                        .font(.system(size: 14, weight: .black, design: .rounded))
+                        .foregroundStyle(.black)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 11)
+                }
+                .buttonStyle(StickerButtonStyle(fill: Kitsch.lime, cornerRadius: 14))
+                .disabled(salaryManwon <= 0)
+                .opacity(salaryManwon > 0 ? 1 : 0.5)
+            }
+        }
+        .foregroundStyle(.black)
+        .onAppear {
+            salaryText = "\(store.annualSalary / 10_000)"
+            let cal = WorkdayCalendar.calendar
+            let dayStart = cal.startOfDay(for: .now)
+            workStart = dayStart.addingTimeInterval(TimeInterval(store.workStartMinutes * 60))
+            workEnd = dayStart.addingTimeInterval(TimeInterval(store.workEndMinutes * 60))
+        }
     }
 }
