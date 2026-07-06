@@ -4,3 +4,5 @@ build-mac/
 *.xcodeproj
 xcuserdata/
 cli/*.egg-info/
+build-release/
+dist/*.dmg
