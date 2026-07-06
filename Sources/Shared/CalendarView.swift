@@ -7,8 +7,6 @@ struct CalendarGridView: View {
     let month: Date
 
     private var cal: Calendar { WorkdayCalendar.calendar }
-    private let weekdaySymbols = ["일", "월", "화", "수", "목", "금", "토"]
-
     /// 첫 주 빈칸(nil) + 해당 월의 날짜들
     private var dayCells: [Date?] {
         guard let interval = cal.dateInterval(of: .month, for: month) else { return [] }
@@ -25,10 +23,10 @@ struct CalendarGridView: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack {
-                ForEach(weekdaySymbols, id: \.self) { symbol in
+                ForEach(Array(L.weekdaySymbols.enumerated()), id: \.offset) { idx, symbol in
                     Text(symbol)
                         .font(.system(size: Kitsch.s(12), weight: .black))
-                        .foregroundStyle(symbol == "일" ? Kitsch.pink : symbol == "토" ? Kitsch.blue : Kitsch.ink.opacity(0.45))
+                        .foregroundStyle(idx == 0 ? Kitsch.pink : idx == 6 ? Kitsch.blue : Kitsch.ink.opacity(0.45))
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -89,7 +87,7 @@ struct DayCell: View {
 /// 삐뚤게 찍힌 인주 도장 스티커
 struct StampMark: View {
     var body: some View {
-        Text("출근")
+        Text(L.stampMark)
             .font(.system(size: Kitsch.s(10), weight: .black))
             .foregroundStyle(Kitsch.stampText)
             .frame(width: 30, height: 30)

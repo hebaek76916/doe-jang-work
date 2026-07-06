@@ -62,6 +62,15 @@ final class StampStore {
         }
     }
 
+    /// 지역 — 언어·통화·공휴일·연봉 입력 관습 (🇰🇷/🇯🇵/🇨🇳)
+    var region: Region {
+        didSet {
+            Self.defaults.set(region.rawValue, forKey: Self.regionKey)
+            L.region = region
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+    }
+
     /// 시크릿 모드 — 금액 끝 3자리만 노출 (•••,429원)
     var isSecret: Bool {
         didSet {
@@ -75,6 +84,7 @@ final class StampStore {
     private static let workStartKey = "workStartMinutes"
     private static let workEndKey = "workEndMinutes"
     private static let themeKey = "themeName"
+    private static let regionKey = "regionName"
     private static let formalKey = "isFormal" // 구버전 마이그레이션용
     private static let secretKey = "isSecret"
 
@@ -92,7 +102,9 @@ final class StampStore {
             theme = d.bool(forKey: Self.formalKey) ? .formal : .kitsch
         }
         isSecret = d.bool(forKey: Self.secretKey)
+        region = Region(rawValue: d.string(forKey: Self.regionKey) ?? "") ?? .korea
         Kitsch.theme = theme
+        L.region = region
     }
 
     /// App Group 도입 전 UserDefaults.standard에 있던 데이터를 한 번만 옮긴다.
@@ -202,31 +214,14 @@ final class StampStore {
 // MARK: - 포맷
 
 extension Int {
-    /// 1234567 → "1,234,567원"
-    var wonString: String {
-        let f = NumberFormatter()
-        f.numberStyle = .decimal
-        return (f.string(from: NSNumber(value: self)) ?? "\(self)") + "원"
-    }
+    /// 1234567 → "1,234,567원" (지역 통화: 원/円/元)
+    var wonString: String { L.money(self) }
 
     /// 시크릿 모드: 규모는 숨기고 끝 3자리만 — "•••,429원"
     /// 끝자리는 초당 계속 바뀌므로 "오르는 재미"는 유지된다.
-    var maskedWonString: String {
-        guard abs(self) >= 1000 else { return "•••원" }
-        return "•••,\(String(format: "%03d", abs(self) % 1000))원"
-    }
+    var maskedWonString: String { L.maskedMoney(self) }
 
-    func wonString(secret: Bool) -> String {
-        secret ? maskedWonString : wonString
-    }
-
-    /// 50000000 → "5,000만원" (연봉 표시용)
-    var manwonString: String {
-        let man = self / 10_000
-        let f = NumberFormatter()
-        f.numberStyle = .decimal
-        return (f.string(from: NSNumber(value: man)) ?? "\(man)") + "만원"
-    }
+    func wonString(secret: Bool) -> String { L.money(self, secret: secret) }
 
     /// 자정 기준 분 → "09:00"
     var hhmmString: String {

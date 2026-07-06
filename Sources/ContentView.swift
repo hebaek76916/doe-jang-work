@@ -28,7 +28,7 @@ struct ContentView: View {
                 .padding(.top, 8)
             }
             // 테마 토글 시 StickerCard 등 정적 팔레트를 쓰는 뷰까지 전부 다시 그린다
-            .id(store.theme)
+            .id("\(store.theme.rawValue)-\(store.region.rawValue)")
         }
         .fontDesign(Kitsch.design)
         .preferredColorScheme(Kitsch.theme == .matrix ? .dark : .light)
@@ -41,7 +41,7 @@ struct ContentView: View {
 
     private var titleBar: some View {
         HStack {
-            Text("💸 출근도장")
+            Text(L.appTitle)
                 .font(.system(size: Kitsch.s(28), weight: .black, design: Kitsch.design))
                 .foregroundStyle(Kitsch.ink)
             Spacer()
@@ -67,17 +67,17 @@ struct ContentView: View {
             Group {
                 switch phase {
                 case .restDay:
-                    liveCardBody(emoji: "🧘", title: "오늘은 무급 힐링", subtitle: "쉬는 것도 일이다", fill: Kitsch.pastelBlue, rotation: 0.8)
+                    liveCardBody(emoji: "🧘", title: L.restTitle, subtitle: L.restSub, fill: Kitsch.pastelBlue, rotation: 0.8)
                 case .beforeWork:
-                    liveCardBody(emoji: "🛌", title: "아직 출근 전", subtitle: "\(store.workStartMinutes.hhmmString)부터 돈이 오릅니다", fill: Kitsch.card, rotation: -0.6)
+                    liveCardBody(emoji: "🛌", title: L.beforeTitle, subtitle: L.beforeSub(store.workStartMinutes.hhmmString), fill: Kitsch.card, rotation: -0.6)
                 case .commuting:
-                    liveCardBody(emoji: "🏃", title: "돈 벌러 가는 중", subtitle: "\(store.workStartMinutes.hhmmString)부터 카운트 시작!", fill: Kitsch.pastelYellow, rotation: -1)
+                    liveCardBody(emoji: "🏃", title: L.commuteTitle, subtitle: L.commuteSub(store.workStartMinutes.hhmmString), fill: Kitsch.pastelYellow, rotation: -1)
                 case .working:
                     workingCard(earned: earned, at: context.date)
                 case .justFinished:
-                    liveCardBody(emoji: "🍻", title: "오늘 돈 다 벌었다!", subtitle: "+\(earned.wonString(secret: secret)) — 수고했다 진짜", fill: Kitsch.lime, rotation: -1.2)
+                    liveCardBody(emoji: "🍻", title: L.doneTitle, subtitle: L.doneSub(earned.wonString(secret: secret)), fill: Kitsch.lime, rotation: -1.2)
                 case .settled:
-                    liveCardBody(emoji: "🤑", title: store.isStamped(context.date) ? "오늘 진짜 벌었다" : "돈은 벌었는데 도장을 안 찍음 👀", subtitle: "+\(earned.wonString(secret: secret)) 확정", fill: Kitsch.pastelPurple, rotation: 0.6)
+                    liveCardBody(emoji: "🤑", title: store.isStamped(context.date) ? L.settledTitleStamped : L.settledTitleNoStamp, subtitle: L.settledSub(earned.wonString(secret: secret)), fill: Kitsch.pastelPurple, rotation: 0.6)
                 }
             }
         }
@@ -108,10 +108,10 @@ struct ContentView: View {
 
         return VStack(spacing: 10) {
             HStack {
-                Text("💸 지금 벌고 있는 중")
+                Text("💸 \(L.workingTitle)")
                     .font(.system(size: Kitsch.s(14), weight: .black))
                 Spacer()
-                Text("퇴근까지 \(remaining / 3600):\(String(format: "%02d", remaining % 3600 / 60)):\(String(format: "%02d", remaining % 60))")
+                Text("\(L.untilOff) \(remaining / 3600):\(String(format: "%02d", remaining % 3600 / 60)):\(String(format: "%02d", remaining % 60))")
                     .font(.system(size: Kitsch.s(12), weight: .black))
                     .monospacedDigit()
                     .opacity(0.55)
@@ -143,7 +143,7 @@ struct ContentView: View {
 
     private var summaryCard: some View {
         VStack(spacing: 14) {
-            Text("이번 달 모은 돈 ✨")
+            Text(L.monthEarnedBadge)
                 .font(.system(size: Kitsch.s(15), weight: .heavy))
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
@@ -159,13 +159,13 @@ struct ContentView: View {
                     withAnimation(.snappy) { peeking = pressing }
                 }
 
-            Text("도장 \(store.stampCount(year: displayedYear, month: displayedMonthNumber))개 = 순도 100% 내 돈 🤑")
+            Text(L.stampCountLine(store.stampCount(year: displayedYear, month: displayedMonthNumber)))
                 .font(.system(size: Kitsch.s(13), weight: .bold))
                 .opacity(0.65)
 
             HStack(spacing: 10) {
-                statChip(title: "하루 일급", value: store.dailyWage(year: displayedYear).wonString(secret: secret), fill: Kitsch.card, rotation: 1.5)
-                statChip(title: "올해 누적", value: store.earned(year: displayedYear).wonString(secret: secret), fill: Kitsch.pastelPurple, rotation: -1)
+                statChip(title: L.dailyWage, value: store.dailyWage(year: displayedYear).wonString(secret: secret), fill: Kitsch.card, rotation: 1.5)
+                statChip(title: L.yearTotal, value: store.earned(year: displayedYear).wonString(secret: secret), fill: Kitsch.pastelPurple, rotation: -1)
             }
         }
         .foregroundStyle(Kitsch.ink)
@@ -207,7 +207,7 @@ struct ContentView: View {
                 .buttonStyle(StickerButtonStyle(fill: Kitsch.yellow, cornerRadius: 12))
 
                 Spacer()
-                Text("\(String(displayedYear))년 \(displayedMonthNumber)월")
+                Text(L.monthTitle(displayedYear, displayedMonthNumber))
                     .font(.system(size: Kitsch.s(20), weight: .black))
                 Spacer()
 
@@ -245,8 +245,8 @@ struct ContentView: View {
             withAnimation(.bouncy) { store.toggleStamp(today) }
         } label: {
             Text(stamped
-                ? "오늘 +\(store.todayWage.wonString(secret: secret)) 순삭 🤑"
-                : isWorkday ? "출근 도장 쾅 💥" : "쉬는 날 = 무급 힐링 🧘")
+                ? L.stampButtonStamped(store.todayWage.wonString(secret: secret))
+                : isWorkday ? L.stampButtonGo : L.stampButtonRest)
                 .font(.system(size: Kitsch.s(19), weight: .black, design: Kitsch.design))
                 .foregroundStyle(Kitsch.ink)
                 .frame(maxWidth: .infinity)
@@ -277,13 +277,13 @@ struct SettingsSheet: View {
 
                 VStack(spacing: 20) {
                     HStack {
-                        Text("연봉")
+                        Text(L.salaryLabel)
                             .font(.system(size: Kitsch.s(16), weight: .black))
-                        TextField("연봉", text: $salaryText)
+                        TextField(L.salaryLabel, text: $salaryText)
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
                             .font(.system(size: Kitsch.s(20), weight: .black, design: Kitsch.design))
-                        Text("만원")
+                        Text(L.salaryUnit)
                             .font(.system(size: Kitsch.s(15), weight: .bold))
                             .opacity(0.5)
                     }
@@ -292,13 +292,13 @@ struct SettingsSheet: View {
 
                     HStack(spacing: 14) {
                         HStack(spacing: 2) {
-                            Text("출근")
+                            Text(L.workStart)
                                 .font(.system(size: Kitsch.s(14), weight: .black))
                             DatePicker("", selection: $workStart, displayedComponents: .hourAndMinute)
                                 .labelsHidden()
                         }
                         HStack(spacing: 2) {
-                            Text("퇴근")
+                            Text(L.workEnd)
                                 .font(.system(size: Kitsch.s(14), weight: .black))
                             DatePicker("", selection: $workEnd, displayedComponents: .hourAndMinute)
                                 .labelsHidden()
@@ -310,20 +310,28 @@ struct SettingsSheet: View {
 
                     VStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("테마")
+                            Text(L.themeLabel)
                                 .font(.system(size: Kitsch.s(14), weight: .black))
-                            Picker("테마", selection: $store.theme) {
+                            Picker(L.themeLabel, selection: $store.theme) {
                                 ForEach(AppTheme.allCases, id: \.self) { theme in
-                                    Text(theme.label).tag(theme)
+                                    Text(L.themeName(theme)).tag(theme)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            Text(L.regionLabel)
+                                .font(.system(size: Kitsch.s(14), weight: .black))
+                            Picker(L.regionLabel, selection: $store.region) {
+                                ForEach(Region.allCases, id: \.self) { region in
+                                    Text(region.label).tag(region)
                                 }
                             }
                             .pickerStyle(.segmented)
                         }
                         Toggle(isOn: $store.isSecret) {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("시크릿 모드 🕶️")
+                                Text(L.secretTitle)
                                     .font(.system(size: Kitsch.s(14), weight: .black))
-                                Text("금액 끝 3자리만 표시 — 큰 금액은 꾹 눌러서 확인")
+                                Text(L.secretDesc)
                                     .font(.system(size: Kitsch.s(11), weight: .bold))
                                     .opacity(0.5)
                             }
@@ -335,22 +343,22 @@ struct SettingsSheet: View {
 
                     VStack(spacing: 10) {
                         HStack {
-                            Text("올해 근무일")
+                            Text(L.workdaysThisYear)
                                 .font(.system(size: Kitsch.s(14), weight: .bold))
                                 .opacity(0.6)
                             Spacer()
-                            Text("\(WorkdayCalendar.workdayCount(year: WorkdayCalendar.calendar.component(.year, from: .now)))일")
+                            Text(L.days(WorkdayCalendar.workdayCount(year: WorkdayCalendar.calendar.component(.year, from: .now))))
                                 .font(.system(size: Kitsch.s(15), weight: .black))
                         }
                         HStack {
-                            Text("하루 일급")
+                            Text(L.dailyWage)
                                 .font(.system(size: Kitsch.s(14), weight: .bold))
                                 .opacity(0.6)
                             Spacer()
                             Text(store.todayWage.wonString)
                                 .font(.system(size: Kitsch.s(15), weight: .black))
                         }
-                        Text("주말·공휴일(대체공휴일 포함) 빼고 계산해요")
+                        Text(L.holidayNote)
                             .font(.system(size: Kitsch.s(11), weight: .bold))
                             .opacity(0.4)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -361,15 +369,15 @@ struct SettingsSheet: View {
                     Spacer()
 
                     Button {
-                        if let man = Int(salaryText), man > 0 {
-                            store.annualSalary = man * 10_000
+                        if let n = Int(salaryText), n > 0 {
+                            store.annualSalary = store.region.annualSalary(fromInput: n)
                         }
                         let cal = WorkdayCalendar.calendar
                         store.workStartMinutes = cal.component(.hour, from: workStart) * 60 + cal.component(.minute, from: workStart)
                         store.workEndMinutes = cal.component(.hour, from: workEnd) * 60 + cal.component(.minute, from: workEnd)
                         dismiss()
                     } label: {
-                        Text("저장 💾")
+                        Text(L.save)
                             .font(.system(size: Kitsch.s(17), weight: .black, design: Kitsch.design))
                             .foregroundStyle(Kitsch.ink)
                             .frame(maxWidth: .infinity)
@@ -381,16 +389,16 @@ struct SettingsSheet: View {
                 .padding(20)
             }
             .fontDesign(Kitsch.design)
-            .navigationTitle("설정")
+            .navigationTitle(L.settingsTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("닫기") { dismiss() }
+                    Button(L.close) { dismiss() }
                         .tint(.black)
                 }
             }
             .onAppear {
-                salaryText = "\(store.annualSalary / 10_000)"
+                salaryText = "\(store.region.inputValue(fromAnnual: store.annualSalary))"
                 let cal = WorkdayCalendar.calendar
                 let dayStart = cal.startOfDay(for: .now)
                 workStart = dayStart.addingTimeInterval(TimeInterval(store.workStartMinutes * 60))

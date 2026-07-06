@@ -14,8 +14,8 @@ struct EarningWidget: Widget {
             EarningWidgetView(entry: entry)
                 .containerBackground(for: .widget) { Kitsch.cream }
         }
-        .configurationDisplayName("실시간 벌이")
-        .description("일하는 동안 돈이 쌓이는 걸 지켜보세요 💸")
+        .configurationDisplayName(L.widgetName)
+        .description(L.widgetDesc)
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
@@ -73,6 +73,7 @@ struct EarningProvider: TimelineProvider {
     private func entry(at date: Date, store: StampStore) -> EarningEntry {
         // 위젯 프로세스의 팔레트 플래그 동기화
         Kitsch.theme = store.theme
+        L.region = store.region
         let (start, end) = store.workInterval(on: date)
         return EarningEntry(
             date: date,
@@ -106,7 +107,7 @@ struct EarningWidgetView: View {
         if !entry.hasSalary {
             VStack(spacing: 6) {
                 Text("💼").font(.system(size: Kitsch.s(30)))
-                Text("앱에서 연봉부터!")
+                Text(L.setupFirst)
                     .font(.system(size: Kitsch.s(13), weight: .heavy, design: Kitsch.design))
             }
             .foregroundStyle(Kitsch.ink)
@@ -130,12 +131,12 @@ struct EarningWidgetView: View {
 
     private var phaseTitle: String {
         switch entry.phase {
-        case .restDay: "무급 힐링 중"
-        case .beforeWork: "아직 출근 전"
-        case .commuting: "돈 벌러 가는 중"
-        case .working: "지금 벌고 있는 중"
-        case .justFinished: "다 벌었다, 수고했다!"
-        case .settled: entry.stampedToday ? "오늘 진짜 벌었다" : "도장 안 찍음 👀"
+        case .restDay: L.tickerRest
+        case .beforeWork: L.beforeTitle
+        case .commuting: L.commuteTitle
+        case .working: L.workingTitle
+        case .justFinished: L.doneTitle
+        case .settled: entry.stampedToday ? L.settledTitleStamped : L.settledTitleNoStamp
         }
     }
 
@@ -153,12 +154,12 @@ struct EarningWidgetView: View {
                         .foregroundStyle(Kitsch.pink)
                         .minimumScaleFactor(0.6)
                 case .commuting, .beforeWork:
-                    Text("오늘 \(entry.dailyWage.wonString(secret: entry.secret)) 예정")
+                    Text(L.expectedToday(entry.dailyWage.wonString(secret: entry.secret)))
                         .font(.system(size: Kitsch.s(12), weight: .bold, design: Kitsch.design))
                         .opacity(0.55)
                         .minimumScaleFactor(0.7)
                 case .restDay:
-                    Text("0원도 힐링이면 OK")
+                    Text(L.restZero)
                         .font(.system(size: Kitsch.s(12), weight: .bold, design: Kitsch.design))
                         .opacity(0.55)
                 }
@@ -181,7 +182,7 @@ struct EarningWidgetView: View {
                     .minimumScaleFactor(0.8)
                 if entry.phase == .working {
                     HStack(spacing: 4) {
-                        Text("퇴근까지")
+                        Text(L.untilOff)
                             .font(.system(size: Kitsch.s(11), weight: .bold))
                             .opacity(0.5)
                         Text(timerInterval: entry.date...entry.workEnd, countsDown: true)
@@ -200,12 +201,12 @@ struct EarningWidgetView: View {
                         .foregroundStyle(Kitsch.pink)
                         .minimumScaleFactor(0.5)
                 case .commuting, .beforeWork:
-                    Text("오늘 \(entry.dailyWage.wonString(secret: entry.secret))")
+                    Text(L.expectedToday(entry.dailyWage.wonString(secret: entry.secret)))
                         .font(.system(size: Kitsch.s(18), weight: .black, design: Kitsch.design))
                         .opacity(0.6)
                         .minimumScaleFactor(0.6)
                 case .restDay:
-                    Text("휴식도 재테크 🧖")
+                    Text(L.restZero)
                         .font(.system(size: Kitsch.s(14), weight: .bold, design: Kitsch.design))
                         .opacity(0.55)
                 }

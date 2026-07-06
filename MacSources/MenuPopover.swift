@@ -34,13 +34,13 @@ struct MenuPopover: View {
         // fixedSize로 팝오버가 콘텐츠 실제 높이만큼 늘어나게 한다.
         .fixedSize(horizontal: false, vertical: true)
         // 테마 토글 시 정적 팔레트를 쓰는 뷰까지 전부 다시 그린다
-        .id(store.theme)
+        .id("\(store.theme.rawValue)-\(store.region.rawValue)")
     }
 
     private var dashboard: some View {
         VStack(spacing: 16) {
             HStack(spacing: 6) {
-                Text("💸 출근도장")
+                Text(L.appTitle)
                     .font(.system(size: Kitsch.s(18), weight: .black, design: Kitsch.design))
                 Spacer()
                 Button {
@@ -55,7 +55,7 @@ struct MenuPopover: View {
                 Button {
                     confirmQuit()
                 } label: {
-                    Text("종료")
+                    Text(L.quit)
                         .font(.system(size: Kitsch.s(11), weight: .black))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -70,8 +70,8 @@ struct MenuPopover: View {
 
             // 이번 달 누적
             HStack(spacing: 10) {
-                statChip(title: "오늘 일급", value: store.todayWage.wonString(secret: secret), fill: Kitsch.card)
-                statChip(title: "이번 달", value: store.earned(year: year, month: month).wonString(secret: secret), fill: Kitsch.pastelPurple)
+                statChip(title: L.todayWageChip, value: store.todayWage.wonString(secret: secret), fill: Kitsch.card)
+                statChip(title: L.monthChip, value: store.earned(year: year, month: month).wonString(secret: secret), fill: Kitsch.pastelPurple)
             }
 
             // 도장 버튼
@@ -79,7 +79,7 @@ struct MenuPopover: View {
             Button {
                 store.toggleStamp(.now)
             } label: {
-                Text(stampedToday ? "오늘 도장 찍음 ✅" : "출근 도장 쾅 💥")
+                Text(stampedToday ? L.stampedToday : L.stampButtonGo)
                     .font(.system(size: Kitsch.s(15), weight: .black, design: Kitsch.design))
                     .foregroundStyle(Kitsch.ink)
                     .frame(maxWidth: .infinity)
@@ -93,7 +93,7 @@ struct MenuPopover: View {
                 withAnimation(.snappy) { showCalendar.toggle() }
             } label: {
                 HStack(spacing: 6) {
-                    Text(showCalendar ? "달력 접기" : "달력 펼치기 📅")
+                    Text(showCalendar ? L.calFold : L.calUnfold)
                         .font(.system(size: Kitsch.s(13), weight: .black, design: Kitsch.design))
                     Image(systemName: showCalendar ? "chevron.up" : "chevron.down")
                         .font(.system(size: Kitsch.s(11), weight: .black))
@@ -122,7 +122,7 @@ struct MenuPopover: View {
                 }
                 .buttonStyle(StickerButtonStyle(fill: Kitsch.yellow, cornerRadius: 10))
                 Spacer()
-                Text("\(String(displayedYear))년 \(displayedMonthNum)월")
+                Text(L.monthTitle(displayedYear, displayedMonthNum))
                     .font(.system(size: Kitsch.s(15), weight: .black))
                 Spacer()
                 Button {
@@ -148,11 +148,11 @@ struct MenuPopover: View {
     /// 실수 종료 방지 — 한 번 더 묻고 종료
     private func confirmQuit() {
         let alert = NSAlert()
-        alert.messageText = "출근도장을 종료할까요?"
-        alert.informativeText = "종료하면 메뉴바 티커가 사라져요. 돈은 계속 벌리는데 안 보임 🥲"
+        alert.messageText = L.quitTitle
+        alert.informativeText = L.quitMessage
         alert.alertStyle = .warning
-        alert.addButton(withTitle: "종료")
-        alert.addButton(withTitle: "취소")
+        alert.addButton(withTitle: L.quit)
+        alert.addButton(withTitle: L.cancel)
         if alert.runModal() == .alertFirstButtonReturn {
             NSApp.terminate(nil)
         }
@@ -181,11 +181,11 @@ struct MenuPopover: View {
                         withAnimation(.snappy) { peeking = pressing }
                     }
             case .restDay:
-                Text("0원도 힐링이면 OK")
+                Text(L.restZero)
                     .font(.system(size: Kitsch.s(18), weight: .black, design: Kitsch.design))
                     .opacity(0.5)
             case .beforeWork, .commuting:
-                Text("오늘 \(store.todayWage.wonString(secret: secret)) 예정")
+                Text(L.expectedToday(store.todayWage.wonString(secret: secret)))
                     .font(.system(size: Kitsch.s(18), weight: .black, design: Kitsch.design))
                     .opacity(0.5)
             }
@@ -202,12 +202,12 @@ struct MenuPopover: View {
 
     private func phaseTitle(_ phase: WorkPhase) -> String {
         switch phase {
-        case .restDay: "오늘은 무급 힐링 🧘"
-        case .beforeWork: "아직 출근 전 🛌"
-        case .commuting: "돈 벌러 가는 중 🏃"
-        case .working: "지금 벌고 있는 중 💸"
-        case .justFinished: "다 벌었다, 수고했다 🍻"
-        case .settled: "정시 이후 = 무료봉사 🫠"
+        case .restDay: L.restTitle + " 🧘"
+        case .beforeWork: L.beforeTitle + " 🛌"
+        case .commuting: L.commuteTitle + " 🏃"
+        case .working: L.workingTitle + " 💸"
+        case .justFinished: L.doneTitle + " 🍻"
+        case .settled: L.overtimePhase
         }
     }
 
@@ -242,15 +242,15 @@ struct MacOnboarding: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            Text("💰 연봉 얼마 받음?")
+            Text("💰 \(L.obTitle)")
                 .font(.system(size: Kitsch.s(18), weight: .black, design: Kitsch.design))
 
             HStack(spacing: 6) {
-                TextField("1000", text: $salaryText)
+                TextField(L.salaryPlaceholder, text: $salaryText)
                     .textFieldStyle(.plain)
                     .multilineTextAlignment(.trailing)
                     .font(.system(size: Kitsch.s(24), weight: .black, design: Kitsch.design))
-                Text("만원")
+                Text(L.salaryUnit)
                     .font(.system(size: Kitsch.s(14), weight: .black))
                     .opacity(0.5)
             }
@@ -259,8 +259,8 @@ struct MacOnboarding: View {
             .stickerCard(Kitsch.card, cornerRadius: 14)
 
             HStack(spacing: 12) {
-                DatePicker("출근", selection: $workStart, displayedComponents: .hourAndMinute)
-                DatePicker("퇴근", selection: $workEnd, displayedComponents: .hourAndMinute)
+                DatePicker(L.workStart, selection: $workStart, displayedComponents: .hourAndMinute)
+                DatePicker(L.workEnd, selection: $workEnd, displayedComponents: .hourAndMinute)
             }
             .font(.system(size: Kitsch.s(12), weight: .bold))
             .datePickerStyle(.field)
@@ -269,9 +269,9 @@ struct MacOnboarding: View {
                 let cal = WorkdayCalendar.calendar
                 store.workStartMinutes = cal.component(.hour, from: workStart) * 60 + cal.component(.minute, from: workStart)
                 store.workEndMinutes = cal.component(.hour, from: workEnd) * 60 + cal.component(.minute, from: workEnd)
-                store.annualSalary = salaryManwon * 10_000
+                store.annualSalary = store.region.annualSalary(fromInput: salaryManwon)
             } label: {
-                Text("시작하기 🚀")
+                Text(L.startButton)
                     .font(.system(size: Kitsch.s(15), weight: .black, design: Kitsch.design))
                     .foregroundStyle(Kitsch.ink)
                     .frame(maxWidth: .infinity)
@@ -299,20 +299,20 @@ struct MacSettings: View {
     var body: some View {
         VStack(spacing: 14) {
             HStack {
-                Text("⚙️ 설정")
+                Text("⚙️ \(L.settingsTitle)")
                     .font(.system(size: Kitsch.s(18), weight: .black, design: Kitsch.design))
                 Spacer()
             }
 
             HStack(spacing: 6) {
-                Text("연봉")
+                Text(L.salaryLabel)
                     .font(.system(size: Kitsch.s(13), weight: .black))
                     .opacity(0.5)
-                TextField("1000", text: $salaryText)
+                TextField(L.salaryPlaceholder, text: $salaryText)
                     .textFieldStyle(.plain)
                     .multilineTextAlignment(.trailing)
                     .font(.system(size: Kitsch.s(22), weight: .black, design: Kitsch.design))
-                Text("만원")
+                Text(L.salaryUnit)
                     .font(.system(size: Kitsch.s(13), weight: .black))
                     .opacity(0.5)
             }
@@ -321,22 +321,29 @@ struct MacSettings: View {
             .stickerCard(Kitsch.card, cornerRadius: 14)
 
             HStack(spacing: 12) {
-                DatePicker("출근", selection: $workStart, displayedComponents: .hourAndMinute)
-                DatePicker("퇴근", selection: $workEnd, displayedComponents: .hourAndMinute)
+                DatePicker(L.workStart, selection: $workStart, displayedComponents: .hourAndMinute)
+                DatePicker(L.workEnd, selection: $workEnd, displayedComponents: .hourAndMinute)
             }
             .font(.system(size: Kitsch.s(12), weight: .bold))
             .datePickerStyle(.field)
 
             VStack(alignment: .leading, spacing: 10) {
-                Picker("테마", selection: $store.theme) {
+                Picker(L.themeLabel, selection: $store.theme) {
                     ForEach(AppTheme.allCases, id: \.self) { theme in
-                        Text(theme.label).tag(theme)
+                        Text(L.themeName(theme)).tag(theme)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                Picker(L.regionLabel, selection: $store.region) {
+                    ForEach(Region.allCases, id: \.self) { region in
+                        Text(region.flag).tag(region)
                     }
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
                 Toggle(isOn: $store.isSecret) {
-                    Text("시크릿 모드 🕶️ — 금액 끝 3자리만 표시")
+                    Text(L.secretDescShort)
                         .font(.system(size: Kitsch.s(12), weight: .bold))
                 }
                 .toggleStyle(.switch)
@@ -346,7 +353,7 @@ struct MacSettings: View {
             .padding(12)
             .stickerCard(Kitsch.card, cornerRadius: 14)
 
-            Text("주말·공휴일 빼고 하루 \(store.todayWage.wonString)")
+            Text("\(L.dailyWage) \(store.todayWage.wonString)")
                 .font(.system(size: Kitsch.s(11), weight: .bold))
                 .opacity(0.45)
 
@@ -354,7 +361,7 @@ struct MacSettings: View {
                 Button {
                     onDone()
                 } label: {
-                    Text("취소")
+                    Text(L.cancel)
                         .font(.system(size: Kitsch.s(14), weight: .black, design: Kitsch.design))
                         .foregroundStyle(Kitsch.ink)
                         .frame(maxWidth: .infinity)
@@ -366,10 +373,10 @@ struct MacSettings: View {
                     let cal = WorkdayCalendar.calendar
                     store.workStartMinutes = cal.component(.hour, from: workStart) * 60 + cal.component(.minute, from: workStart)
                     store.workEndMinutes = cal.component(.hour, from: workEnd) * 60 + cal.component(.minute, from: workEnd)
-                    if salaryManwon > 0 { store.annualSalary = salaryManwon * 10_000 }
+                    if salaryManwon > 0 { store.annualSalary = store.region.annualSalary(fromInput: salaryManwon) }
                     onDone()
                 } label: {
-                    Text("저장 💾")
+                    Text(L.save)
                         .font(.system(size: Kitsch.s(14), weight: .black, design: Kitsch.design))
                         .foregroundStyle(Kitsch.ink)
                         .frame(maxWidth: .infinity)
@@ -382,7 +389,7 @@ struct MacSettings: View {
         }
         .foregroundStyle(Kitsch.ink)
         .onAppear {
-            salaryText = "\(store.annualSalary / 10_000)"
+            salaryText = "\(store.region.inputValue(fromAnnual: store.annualSalary))"
             let cal = WorkdayCalendar.calendar
             let dayStart = cal.startOfDay(for: .now)
             workStart = dayStart.addingTimeInterval(TimeInterval(store.workStartMinutes * 60))

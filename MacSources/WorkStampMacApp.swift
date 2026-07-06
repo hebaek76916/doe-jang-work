@@ -45,16 +45,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private var labelText: String {
-        guard store.annualSalary > 0 else { return "출근도장" }
+        guard store.annualSalary > 0 else { return L.tickerAppName }
         // 시크릿 모드: 끝 3자리만 — 초당 계속 바뀌어서 오르는 재미는 유지된다
         let earned = store.earnedSoFar().wonString(secret: store.isSecret)
         switch store.phase() {
-        case .restDay: return "무급 힐링"
-        case .beforeWork: return "출근 전"
-        case .commuting: return "돈 벌러 가는 중"
+        case .restDay: return L.tickerRest
+        case .beforeWork: return L.tickerBefore
+        case .commuting: return L.commuteTitle
         case .working: return "+\(earned)"
-        case .justFinished: return "다 벌었다"
-        case .settled: return "무료봉사 중"
+        case .justFinished: return L.tickerDone
+        case .settled: return L.overtime
         }
     }
 
