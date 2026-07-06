@@ -4,7 +4,11 @@ struct MenuPopover: View {
     @Bindable var store: StampStore
     @State private var showSettings = false
     @State private var showCalendar = false
+    @State private var peeking = false
     @State private var displayedMonth = WorkdayCalendar.calendar.startOfDay(for: .now)
+
+    /// 시크릿 모드 + 꾹 누르는 동안(peek)은 잠깐 해제
+    private var secret: Bool { store.isSecret && !peeking }
 
     private var cal: Calendar { WorkdayCalendar.calendar }
     private var year: Int { cal.component(.year, from: .now) }
@@ -29,6 +33,8 @@ struct MenuPopover: View {
         // .window 스타일이 콘텐츠 높이를 시스템 기본으로 잘라 스크롤이 생기는 걸 막는다.
         // fixedSize로 팝오버가 콘텐츠 실제 높이만큼 늘어나게 한다.
         .fixedSize(horizontal: false, vertical: true)
+        // 테마 토글 시 정적 팔레트를 쓰는 뷰까지 전부 다시 그린다
+        .id(store.isFormal)
     }
 
     private var dashboard: some View {
@@ -47,7 +53,7 @@ struct MenuPopover: View {
                 }
                 .buttonStyle(StickerButtonStyle(fill: .white, cornerRadius: 10))
                 Button {
-                    NSApp.terminate(nil)
+                    confirmQuit()
                 } label: {
                     Text("종료")
                         .font(.system(size: 11, weight: .black))
@@ -64,8 +70,8 @@ struct MenuPopover: View {
 
             // 이번 달 누적
             HStack(spacing: 10) {
-                statChip(title: "오늘 일급", value: store.todayWage.wonString, fill: .white)
-                statChip(title: "이번 달", value: store.earned(year: year, month: month).wonString, fill: Kitsch.pastelPurple)
+                statChip(title: "오늘 일급", value: store.todayWage.wonString(secret: secret), fill: .white)
+                statChip(title: "이번 달", value: store.earned(year: year, month: month).wonString(secret: secret), fill: Kitsch.pastelPurple)
             }
 
             // 도장 버튼
@@ -139,6 +145,19 @@ struct MenuPopover: View {
         }
     }
 
+    /// 실수 종료 방지 — 한 번 더 묻고 종료
+    private func confirmQuit() {
+        let alert = NSAlert()
+        alert.messageText = "출근도장을 종료할까요?"
+        alert.informativeText = "종료하면 메뉴바 티커가 사라져요. 돈은 계속 벌리는데 안 보임 🥲"
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "종료")
+        alert.addButton(withTitle: "취소")
+        if alert.runModal() == .alertFirstButtonReturn {
+            NSApp.terminate(nil)
+        }
+    }
+
     @ViewBuilder
     private func liveCard(at date: Date) -> some View {
         let earned = store.earnedSoFar(at: date)
@@ -150,19 +169,23 @@ struct MenuPopover: View {
                 .opacity(0.6)
             switch phase {
             case .working, .justFinished, .settled:
-                Text("+\(earned.wonString)")
+                Text("+\(earned.wonString(secret: secret))")
                     .font(.system(size: 34, weight: .black, design: .rounded))
                     .foregroundStyle(Kitsch.pink)
                     .contentTransition(.numericText())
                     .animation(.snappy(duration: 0.4), value: earned)
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
+                    // 시크릿 모드에서 꾹 누르는 동안만 진짜 금액 표시
+                    .onLongPressGesture(minimumDuration: .infinity) {} onPressingChanged: { pressing in
+                        withAnimation(.snappy) { peeking = pressing }
+                    }
             case .restDay:
                 Text("0원도 힐링이면 OK")
                     .font(.system(size: 18, weight: .black, design: .rounded))
                     .opacity(0.5)
             case .beforeWork, .commuting:
-                Text("오늘 \(store.todayWage.wonString) 예정")
+                Text("오늘 \(store.todayWage.wonString(secret: secret)) 예정")
                     .font(.system(size: 18, weight: .black, design: .rounded))
                     .opacity(0.5)
             }
@@ -303,6 +326,22 @@ struct MacSettings: View {
             }
             .font(.system(size: 12, weight: .bold))
             .datePickerStyle(.field)
+
+            VStack(spacing: 8) {
+                Toggle(isOn: $store.isFormal) {
+                    Text("포멀 모드 👔 — 회사에서 안 튀는 디자인")
+                        .font(.system(size: 12, weight: .bold))
+                }
+                Toggle(isOn: $store.isSecret) {
+                    Text("시크릿 모드 🕶️ — 금액 끝 3자리만 표시")
+                        .font(.system(size: 12, weight: .bold))
+                }
+            }
+            .toggleStyle(.switch)
+            .controlSize(.small)
+            .tint(Kitsch.pink)
+            .padding(12)
+            .stickerCard(.white, cornerRadius: 14)
 
             Text("주말·공휴일 빼고 하루 \(store.todayWage.wonString)")
                 .font(.system(size: 11, weight: .bold))

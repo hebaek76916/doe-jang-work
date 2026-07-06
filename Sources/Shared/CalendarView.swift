@@ -95,11 +95,13 @@ struct StampMark: View {
             .frame(width: 30, height: 30)
             .background {
                 ZStack {
-                    Circle().fill(.black).offset(x: 2, y: 2.5)
+                    if !Kitsch.formal {
+                        Circle().fill(.black).offset(x: 2, y: 2.5)
+                    }
                     Circle().fill(Kitsch.pink)
-                    Circle().strokeBorder(.black, lineWidth: 2)
+                    Circle().strokeBorder(Kitsch.formal ? .clear : .black, lineWidth: 2)
                 }
             }
-            .rotationEffect(.degrees(-14))
+            .rotationEffect(.degrees(Kitsch.tilt(-14)))
     }
 }

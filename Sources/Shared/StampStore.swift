@@ -53,10 +53,29 @@ final class StampStore {
         }
     }
 
+    /// 포멀 모드 — 회사에서 눈치 안 보이는 차분한 테마
+    var isFormal: Bool {
+        didSet {
+            Self.defaults.set(isFormal, forKey: Self.formalKey)
+            Kitsch.formal = isFormal
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+    }
+
+    /// 시크릿 모드 — 금액 끝 3자리만 노출 (•••,429원)
+    var isSecret: Bool {
+        didSet {
+            Self.defaults.set(isSecret, forKey: Self.secretKey)
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+    }
+
     private static let salaryKey = "annualSalary"
     private static let stampsKey = "stampedDays"
     private static let workStartKey = "workStartMinutes"
     private static let workEndKey = "workEndMinutes"
+    private static let formalKey = "isFormal"
+    private static let secretKey = "isSecret"
 
     init() {
         Self.migrateFromStandardIfNeeded()
@@ -65,6 +84,9 @@ final class StampStore {
         stampedDays = Set(d.stringArray(forKey: Self.stampsKey) ?? [])
         workStartMinutes = d.object(forKey: Self.workStartKey) as? Int ?? 9 * 60
         workEndMinutes = d.object(forKey: Self.workEndKey) as? Int ?? 18 * 60
+        isFormal = d.bool(forKey: Self.formalKey)
+        isSecret = d.bool(forKey: Self.secretKey)
+        Kitsch.formal = isFormal
     }
 
     /// App Group 도입 전 UserDefaults.standard에 있던 데이터를 한 번만 옮긴다.
@@ -179,6 +201,17 @@ extension Int {
         let f = NumberFormatter()
         f.numberStyle = .decimal
         return (f.string(from: NSNumber(value: self)) ?? "\(self)") + "원"
+    }
+
+    /// 시크릿 모드: 규모는 숨기고 끝 3자리만 — "•••,429원"
+    /// 끝자리는 초당 계속 바뀌므로 "오르는 재미"는 유지된다.
+    var maskedWonString: String {
+        guard abs(self) >= 1000 else { return "•••원" }
+        return "•••,\(String(format: "%03d", abs(self) % 1000))원"
+    }
+
+    func wonString(secret: Bool) -> String {
+        secret ? maskedWonString : wonString
     }
 
     /// 50000000 → "5,000만원" (연봉 표시용)

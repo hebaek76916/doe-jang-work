@@ -4,10 +4,13 @@ struct ContentView: View {
     @Bindable var store: StampStore
     @State private var displayedMonth: Date = WorkdayCalendar.calendar.startOfDay(for: .now)
     @State private var showSettings = false
+    @State private var peeking = false
 
     private var cal: Calendar { WorkdayCalendar.calendar }
     private var displayedYear: Int { cal.component(.year, from: displayedMonth) }
     private var displayedMonthNumber: Int { cal.component(.month, from: displayedMonth) }
+    /// 시크릿 모드 + 꾹 누르는 동안(peek)은 잠깐 해제
+    private var secret: Bool { store.isSecret && !peeking }
 
     var body: some View {
         ZStack {
@@ -24,6 +27,8 @@ struct ContentView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
             }
+            // 테마 토글 시 StickerCard 등 정적 팔레트를 쓰는 뷰까지 전부 다시 그린다
+            .id(store.isFormal)
         }
         .fontDesign(.rounded)
         .preferredColorScheme(.light)
@@ -70,9 +75,9 @@ struct ContentView: View {
                 case .working:
                     workingCard(earned: earned, at: context.date)
                 case .justFinished:
-                    liveCardBody(emoji: "🍻", title: "오늘 돈 다 벌었다!", subtitle: "+\(earned.wonString) — 수고했다 진짜", fill: Kitsch.lime, rotation: -1.2)
+                    liveCardBody(emoji: "🍻", title: "오늘 돈 다 벌었다!", subtitle: "+\(earned.wonString(secret: secret)) — 수고했다 진짜", fill: Kitsch.lime, rotation: -1.2)
                 case .settled:
-                    liveCardBody(emoji: "🤑", title: store.isStamped(context.date) ? "오늘 진짜 벌었다" : "돈은 벌었는데 도장을 안 찍음 👀", subtitle: "+\(earned.wonString) 확정", fill: Kitsch.pastelPurple, rotation: 0.6)
+                    liveCardBody(emoji: "🤑", title: store.isStamped(context.date) ? "오늘 진짜 벌었다" : "돈은 벌었는데 도장을 안 찍음 👀", subtitle: "+\(earned.wonString(secret: secret)) 확정", fill: Kitsch.pastelPurple, rotation: 0.6)
                 }
             }
         }
@@ -111,7 +116,7 @@ struct ContentView: View {
                     .monospacedDigit()
                     .opacity(0.55)
             }
-            Text("+\(earned.wonString)")
+            Text("+\(earned.wonString(secret: secret))")
                 .font(.system(size: 34, weight: .black, design: .rounded))
                 .foregroundStyle(Kitsch.pink)
                 .contentTransition(.numericText())
@@ -144,19 +149,23 @@ struct ContentView: View {
                 .padding(.vertical, 6)
                 .stickerCard(Kitsch.yellow, rotation: -2, cornerRadius: 999)
 
-            Text(store.earned(year: displayedYear, month: displayedMonthNumber).wonString)
+            Text(store.earned(year: displayedYear, month: displayedMonthNumber).wonString(secret: secret))
                 .font(.system(size: 42, weight: .black, design: .rounded))
                 .contentTransition(.numericText())
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
+                // 시크릿 모드에서 꾹 누르는 동안만 진짜 금액 표시
+                .onLongPressGesture(minimumDuration: .infinity) {} onPressingChanged: { pressing in
+                    withAnimation(.snappy) { peeking = pressing }
+                }
 
             Text("도장 \(store.stampCount(year: displayedYear, month: displayedMonthNumber))개 = 순도 100% 내 돈 🤑")
                 .font(.system(size: 13, weight: .bold))
                 .opacity(0.65)
 
             HStack(spacing: 10) {
-                statChip(title: "하루 일급", value: store.dailyWage(year: displayedYear).wonString, fill: .white, rotation: 1.5)
-                statChip(title: "올해 누적", value: store.earned(year: displayedYear).wonString, fill: Kitsch.pastelPurple, rotation: -1)
+                statChip(title: "하루 일급", value: store.dailyWage(year: displayedYear).wonString(secret: secret), fill: .white, rotation: 1.5)
+                statChip(title: "올해 누적", value: store.earned(year: displayedYear).wonString(secret: secret), fill: Kitsch.pastelPurple, rotation: -1)
             }
         }
         .foregroundStyle(.black)
@@ -236,7 +245,7 @@ struct ContentView: View {
             withAnimation(.bouncy) { store.toggleStamp(today) }
         } label: {
             Text(stamped
-                ? "오늘 +\(store.todayWage.wonString) 순삭 🤑"
+                ? "오늘 +\(store.todayWage.wonString(secret: secret)) 순삭 🤑"
                 : isWorkday ? "출근 도장 쾅 💥" : "쉬는 날 = 무급 힐링 🧘")
                 .font(.system(size: 19, weight: .black, design: .rounded))
                 .foregroundStyle(.black)
@@ -298,6 +307,30 @@ struct SettingsSheet: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 10)
                     .stickerCard(.white, rotation: 0.6, cornerRadius: 16)
+
+                    VStack(spacing: 12) {
+                        Toggle(isOn: $store.isFormal) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("포멀 모드 👔")
+                                    .font(.system(size: 14, weight: .black))
+                                Text("회사에서 안 튀는 차분한 디자인")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .opacity(0.5)
+                            }
+                        }
+                        Toggle(isOn: $store.isSecret) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("시크릿 모드 🕶️")
+                                    .font(.system(size: 14, weight: .black))
+                                Text("금액 끝 3자리만 표시 — 큰 금액은 꾹 눌러서 확인")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .opacity(0.5)
+                            }
+                        }
+                    }
+                    .tint(Kitsch.pink)
+                    .padding(18)
+                    .stickerCard(.white, rotation: -0.5, cornerRadius: 16)
 
                     VStack(spacing: 10) {
                         HStack {

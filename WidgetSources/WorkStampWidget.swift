@@ -31,6 +31,7 @@ struct EarningEntry: TimelineEntry {
     let workStart: Date
     let workEnd: Date
     let hasSalary: Bool
+    let secret: Bool
 }
 
 struct EarningProvider: TimelineProvider {
@@ -70,6 +71,8 @@ struct EarningProvider: TimelineProvider {
     }
 
     private func entry(at date: Date, store: StampStore) -> EarningEntry {
+        // 위젯 프로세스의 팔레트 플래그 동기화
+        Kitsch.formal = store.isFormal
         let (start, end) = store.workInterval(on: date)
         return EarningEntry(
             date: date,
@@ -79,7 +82,8 @@ struct EarningProvider: TimelineProvider {
             stampedToday: store.isStamped(date),
             workStart: start,
             workEnd: end,
-            hasSalary: store.annualSalary > 0
+            hasSalary: store.annualSalary > 0,
+            secret: store.isSecret
         )
     }
 
@@ -87,7 +91,7 @@ struct EarningProvider: TimelineProvider {
         EarningEntry(
             date: .now, phase: .working, earned: 132_450, dailyWage: 202_429,
             stampedToday: true, workStart: .now.addingTimeInterval(-4 * 3600),
-            workEnd: .now.addingTimeInterval(4 * 3600), hasSalary: true
+            workEnd: .now.addingTimeInterval(4 * 3600), hasSalary: true, secret: false
         )
     }
 }
@@ -144,12 +148,12 @@ struct EarningWidgetView: View {
             Group {
                 switch entry.phase {
                 case .working, .justFinished, .settled:
-                    Text("+\(entry.earned.wonString)")
+                    Text("+\(entry.earned.wonString(secret: entry.secret))")
                         .font(.system(size: 19, weight: .black, design: .rounded))
                         .foregroundStyle(Kitsch.pink)
                         .minimumScaleFactor(0.6)
                 case .commuting, .beforeWork:
-                    Text("오늘 \(entry.dailyWage.wonString) 예정")
+                    Text("오늘 \(entry.dailyWage.wonString(secret: entry.secret)) 예정")
                         .font(.system(size: 12, weight: .bold, design: .rounded))
                         .opacity(0.55)
                         .minimumScaleFactor(0.7)
@@ -191,12 +195,12 @@ struct EarningWidgetView: View {
             VStack(alignment: .trailing, spacing: 6) {
                 switch entry.phase {
                 case .working, .justFinished, .settled:
-                    Text("+\(entry.earned.wonString)")
+                    Text("+\(entry.earned.wonString(secret: entry.secret))")
                         .font(.system(size: 26, weight: .black, design: .rounded))
                         .foregroundStyle(Kitsch.pink)
                         .minimumScaleFactor(0.5)
                 case .commuting, .beforeWork:
-                    Text("오늘 \(entry.dailyWage.wonString)")
+                    Text("오늘 \(entry.dailyWage.wonString(secret: entry.secret))")
                         .font(.system(size: 18, weight: .black, design: .rounded))
                         .opacity(0.6)
                         .minimumScaleFactor(0.6)
