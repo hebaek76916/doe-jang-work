@@ -63,6 +63,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if popover.isShown {
             popover.performClose(nil)
         } else {
+            // LSUIElement 앱은 비활성 상태라 스위치/피커가 클릭을 무시한다 — 먼저 활성화
+            NSApp.activate(ignoringOtherApps: true)
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
         }

@@ -27,8 +27,8 @@ struct CalendarGridView: View {
             HStack {
                 ForEach(weekdaySymbols, id: \.self) { symbol in
                     Text(symbol)
-                        .font(.system(size: 12, weight: .black))
-                        .foregroundStyle(symbol == "일" ? Kitsch.pink : symbol == "토" ? Kitsch.blue : .black.opacity(0.45))
+                        .font(.system(size: Kitsch.s(12), weight: .black))
+                        .foregroundStyle(symbol == "일" ? Kitsch.pink : symbol == "토" ? Kitsch.blue : Kitsch.ink.opacity(0.45))
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -65,12 +65,12 @@ struct DayCell: View {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Kitsch.yellow.opacity(0.55))
                     RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(.black, lineWidth: 2)
+                        .strokeBorder(Kitsch.ink, lineWidth: 2)
                 }
                 VStack(spacing: 2) {
                     Text("\(day)")
-                        .font(.system(size: 11, weight: .heavy))
-                        .foregroundStyle(isWorkday ? .black : .black.opacity(0.25))
+                        .font(.system(size: Kitsch.s(11), weight: .heavy))
+                        .foregroundStyle(isWorkday ? Kitsch.ink : Kitsch.ink.opacity(0.25))
                     if stamped {
                         StampMark()
                             .transition(.scale.combined(with: .opacity))
@@ -90,16 +90,16 @@ struct DayCell: View {
 struct StampMark: View {
     var body: some View {
         Text("출근")
-            .font(.system(size: 10, weight: .black))
-            .foregroundStyle(.white)
+            .font(.system(size: Kitsch.s(10), weight: .black))
+            .foregroundStyle(Kitsch.stampText)
             .frame(width: 30, height: 30)
             .background {
                 ZStack {
-                    if !Kitsch.formal {
+                    if Kitsch.theme == .kitsch {
                         Circle().fill(.black).offset(x: 2, y: 2.5)
                     }
                     Circle().fill(Kitsch.pink)
-                    Circle().strokeBorder(Kitsch.formal ? .clear : .black, lineWidth: 2)
+                    Circle().strokeBorder(Kitsch.theme == .kitsch ? .black : .clear, lineWidth: 2)
                 }
             }
             .rotationEffect(.degrees(Kitsch.tilt(-14)))

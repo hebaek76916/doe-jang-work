@@ -24,15 +24,15 @@ struct SalaryInputView: View {
                 Spacer()
 
                 Text("💰")
-                    .font(.system(size: 60))
+                    .font(.system(size: Kitsch.s(60)))
                     .padding(22)
                     .stickerCard(Kitsch.yellow, rotation: -4, cornerRadius: 28)
 
                 VStack(spacing: 10) {
                     Text("연봉 얼마 받음?")
-                        .font(.system(size: 28, weight: .black, design: .rounded))
+                        .font(.system(size: Kitsch.s(28), weight: .black, design: Kitsch.design))
                     Text("🤫 아무한테도 말 안 함\n주말·공휴일 빼고 하루에 얼마 버는지 알려줌")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.system(size: Kitsch.s(14), weight: .bold))
                         .opacity(0.55)
                         .multilineTextAlignment(.center)
                 }
@@ -41,27 +41,27 @@ struct SalaryInputView: View {
                     TextField("1,000", text: $salaryText)
                         .keyboardType(.numberPad)
                         .focused($focused)
-                        .font(.system(size: 40, weight: .black, design: .rounded))
+                        .font(.system(size: Kitsch.s(40), weight: .black, design: Kitsch.design))
                         .multilineTextAlignment(.trailing)
                         .frame(maxWidth: 170)
                     Text("만원")
-                        .font(.system(size: 20, weight: .black))
+                        .font(.system(size: Kitsch.s(20), weight: .black))
                         .opacity(0.5)
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 16)
-                .stickerCard(.white, rotation: 1.2)
+                .stickerCard(Kitsch.card, rotation: 1.2)
 
                 HStack(spacing: 14) {
                     HStack(spacing: 2) {
                         Text("출근")
-                            .font(.system(size: 14, weight: .black))
+                            .font(.system(size: Kitsch.s(14), weight: .black))
                         DatePicker("", selection: $workStart, displayedComponents: .hourAndMinute)
                             .labelsHidden()
                     }
                     HStack(spacing: 2) {
                         Text("퇴근")
-                            .font(.system(size: 14, weight: .black))
+                            .font(.system(size: Kitsch.s(14), weight: .black))
                         DatePicker("", selection: $workEnd, displayedComponents: .hourAndMinute)
                             .labelsHidden()
                     }
@@ -72,7 +72,7 @@ struct SalaryInputView: View {
 
                 if salaryManwon > 0 {
                     Text("하루 출근 = \(previewWage.wonString) 🤑")
-                        .font(.system(size: 18, weight: .black, design: .rounded))
+                        .font(.system(size: Kitsch.s(18), weight: .black, design: Kitsch.design))
                         .padding(.horizontal, 18)
                         .padding(.vertical, 12)
                         .stickerCard(Kitsch.lime, rotation: -1.5, cornerRadius: 999)
@@ -89,8 +89,8 @@ struct SalaryInputView: View {
                     store.annualSalary = salaryManwon * 10_000
                 } label: {
                     Text("시작하기 🚀")
-                        .font(.system(size: 19, weight: .black, design: .rounded))
-                        .foregroundStyle(.black)
+                        .font(.system(size: Kitsch.s(19), weight: .black, design: Kitsch.design))
+                        .foregroundStyle(Kitsch.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
                 }
@@ -99,11 +99,11 @@ struct SalaryInputView: View {
                 .opacity(salaryManwon > 0 ? 1 : 0.5)
                 .padding(.bottom, 20)
             }
-            .foregroundStyle(.black)
+            .foregroundStyle(Kitsch.ink)
             .padding(.horizontal, 24)
         }
-        .fontDesign(.rounded)
-        .preferredColorScheme(.light)
+        .fontDesign(Kitsch.design)
+        .preferredColorScheme(Kitsch.theme == .matrix ? .dark : .light)
         .onAppear { focused = true }
     }
 }

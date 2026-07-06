@@ -72,7 +72,7 @@ struct EarningProvider: TimelineProvider {
 
     private func entry(at date: Date, store: StampStore) -> EarningEntry {
         // 위젯 프로세스의 팔레트 플래그 동기화
-        Kitsch.formal = store.isFormal
+        Kitsch.theme = store.theme
         let (start, end) = store.workInterval(on: date)
         return EarningEntry(
             date: date,
@@ -105,11 +105,11 @@ struct EarningWidgetView: View {
     var body: some View {
         if !entry.hasSalary {
             VStack(spacing: 6) {
-                Text("💼").font(.system(size: 30))
+                Text("💼").font(.system(size: Kitsch.s(30)))
                 Text("앱에서 연봉부터!")
-                    .font(.system(size: 13, weight: .heavy, design: .rounded))
+                    .font(.system(size: Kitsch.s(13), weight: .heavy, design: Kitsch.design))
             }
-            .foregroundStyle(.black)
+            .foregroundStyle(Kitsch.ink)
         } else if family == .systemMedium {
             mediumBody
         } else {
@@ -141,25 +141,25 @@ struct EarningWidgetView: View {
 
     private var smallBody: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(phaseEmoji).font(.system(size: 24))
+            Text(phaseEmoji).font(.system(size: Kitsch.s(24)))
             Text(phaseTitle)
-                .font(.system(size: 12, weight: .heavy, design: .rounded))
+                .font(.system(size: Kitsch.s(12), weight: .heavy, design: Kitsch.design))
                 .minimumScaleFactor(0.8)
             Group {
                 switch entry.phase {
                 case .working, .justFinished, .settled:
                     Text("+\(entry.earned.wonString(secret: entry.secret))")
-                        .font(.system(size: 19, weight: .black, design: .rounded))
+                        .font(.system(size: Kitsch.s(19), weight: .black, design: Kitsch.design))
                         .foregroundStyle(Kitsch.pink)
                         .minimumScaleFactor(0.6)
                 case .commuting, .beforeWork:
                     Text("오늘 \(entry.dailyWage.wonString(secret: entry.secret)) 예정")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .font(.system(size: Kitsch.s(12), weight: .bold, design: Kitsch.design))
                         .opacity(0.55)
                         .minimumScaleFactor(0.7)
                 case .restDay:
                     Text("0원도 힐링이면 OK")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .font(.system(size: Kitsch.s(12), weight: .bold, design: Kitsch.design))
                         .opacity(0.55)
                 }
             }
@@ -168,24 +168,24 @@ struct EarningWidgetView: View {
             }
         }
         .lineLimit(1)
-        .foregroundStyle(.black)
+        .foregroundStyle(Kitsch.ink)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }
 
     private var mediumBody: some View {
         HStack(spacing: 14) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(phaseEmoji).font(.system(size: 30))
+                Text(phaseEmoji).font(.system(size: Kitsch.s(30)))
                 Text(phaseTitle)
-                    .font(.system(size: 14, weight: .heavy, design: .rounded))
+                    .font(.system(size: Kitsch.s(14), weight: .heavy, design: Kitsch.design))
                     .minimumScaleFactor(0.8)
                 if entry.phase == .working {
                     HStack(spacing: 4) {
                         Text("퇴근까지")
-                            .font(.system(size: 11, weight: .bold))
+                            .font(.system(size: Kitsch.s(11), weight: .bold))
                             .opacity(0.5)
                         Text(timerInterval: entry.date...entry.workEnd, countsDown: true)
-                            .font(.system(size: 11, weight: .black, design: .rounded))
+                            .font(.system(size: Kitsch.s(11), weight: .black, design: Kitsch.design))
                             .foregroundStyle(Kitsch.blue)
                     }
                 }
@@ -196,17 +196,17 @@ struct EarningWidgetView: View {
                 switch entry.phase {
                 case .working, .justFinished, .settled:
                     Text("+\(entry.earned.wonString(secret: entry.secret))")
-                        .font(.system(size: 26, weight: .black, design: .rounded))
+                        .font(.system(size: Kitsch.s(26), weight: .black, design: Kitsch.design))
                         .foregroundStyle(Kitsch.pink)
                         .minimumScaleFactor(0.5)
                 case .commuting, .beforeWork:
                     Text("오늘 \(entry.dailyWage.wonString(secret: entry.secret))")
-                        .font(.system(size: 18, weight: .black, design: .rounded))
+                        .font(.system(size: Kitsch.s(18), weight: .black, design: Kitsch.design))
                         .opacity(0.6)
                         .minimumScaleFactor(0.6)
                 case .restDay:
                     Text("휴식도 재테크 🧖")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .font(.system(size: Kitsch.s(14), weight: .bold, design: Kitsch.design))
                         .opacity(0.55)
                 }
                 if entry.phase == .working {
@@ -215,7 +215,7 @@ struct EarningWidgetView: View {
             }
         }
         .lineLimit(1)
-        .foregroundStyle(.black)
+        .foregroundStyle(Kitsch.ink)
     }
 
     /// 시스템이 초 단위로 부드럽게 채워주는 진행바

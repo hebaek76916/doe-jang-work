@@ -53,11 +53,11 @@ final class StampStore {
         }
     }
 
-    /// 포멀 모드 — 회사에서 눈치 안 보이는 차분한 테마
-    var isFormal: Bool {
+    /// 테마 — 키치 / 포멀 / 매트릭스
+    var theme: AppTheme {
         didSet {
-            Self.defaults.set(isFormal, forKey: Self.formalKey)
-            Kitsch.formal = isFormal
+            Self.defaults.set(theme.rawValue, forKey: Self.themeKey)
+            Kitsch.theme = theme
             WidgetCenter.shared.reloadAllTimelines()
         }
     }
@@ -74,7 +74,8 @@ final class StampStore {
     private static let stampsKey = "stampedDays"
     private static let workStartKey = "workStartMinutes"
     private static let workEndKey = "workEndMinutes"
-    private static let formalKey = "isFormal"
+    private static let themeKey = "themeName"
+    private static let formalKey = "isFormal" // 구버전 마이그레이션용
     private static let secretKey = "isSecret"
 
     init() {
@@ -84,9 +85,14 @@ final class StampStore {
         stampedDays = Set(d.stringArray(forKey: Self.stampsKey) ?? [])
         workStartMinutes = d.object(forKey: Self.workStartKey) as? Int ?? 9 * 60
         workEndMinutes = d.object(forKey: Self.workEndKey) as? Int ?? 18 * 60
-        isFormal = d.bool(forKey: Self.formalKey)
+        if let name = d.string(forKey: Self.themeKey), let saved = AppTheme(rawValue: name) {
+            theme = saved
+        } else {
+            // 구버전 isFormal Bool에서 마이그레이션
+            theme = d.bool(forKey: Self.formalKey) ? .formal : .kitsch
+        }
         isSecret = d.bool(forKey: Self.secretKey)
-        Kitsch.formal = isFormal
+        Kitsch.theme = theme
     }
 
     /// App Group 도입 전 UserDefaults.standard에 있던 데이터를 한 번만 옮긴다.

@@ -29,38 +29,38 @@ struct MenuPopover: View {
         .frame(width: 300)
         .padding(18)
         .background(Kitsch.cream)
-        .fontDesign(.rounded)
+        .fontDesign(Kitsch.design)
         // .window 스타일이 콘텐츠 높이를 시스템 기본으로 잘라 스크롤이 생기는 걸 막는다.
         // fixedSize로 팝오버가 콘텐츠 실제 높이만큼 늘어나게 한다.
         .fixedSize(horizontal: false, vertical: true)
         // 테마 토글 시 정적 팔레트를 쓰는 뷰까지 전부 다시 그린다
-        .id(store.isFormal)
+        .id(store.theme)
     }
 
     private var dashboard: some View {
         VStack(spacing: 16) {
             HStack(spacing: 6) {
                 Text("💸 출근도장")
-                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .font(.system(size: Kitsch.s(18), weight: .black, design: Kitsch.design))
                 Spacer()
                 Button {
                     showSettings = true
                 } label: {
                     Text("⚙️")
-                        .font(.system(size: 13))
+                        .font(.system(size: Kitsch.s(13)))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                 }
-                .buttonStyle(StickerButtonStyle(fill: .white, cornerRadius: 10))
+                .buttonStyle(StickerButtonStyle(fill: Kitsch.card, cornerRadius: 10))
                 Button {
                     confirmQuit()
                 } label: {
                     Text("종료")
-                        .font(.system(size: 11, weight: .black))
+                        .font(.system(size: Kitsch.s(11), weight: .black))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                 }
-                .buttonStyle(StickerButtonStyle(fill: .white, cornerRadius: 10))
+                .buttonStyle(StickerButtonStyle(fill: Kitsch.card, cornerRadius: 10))
             }
 
             // 오늘 벌이 라이브 카드
@@ -70,7 +70,7 @@ struct MenuPopover: View {
 
             // 이번 달 누적
             HStack(spacing: 10) {
-                statChip(title: "오늘 일급", value: store.todayWage.wonString(secret: secret), fill: .white)
+                statChip(title: "오늘 일급", value: store.todayWage.wonString(secret: secret), fill: Kitsch.card)
                 statChip(title: "이번 달", value: store.earned(year: year, month: month).wonString(secret: secret), fill: Kitsch.pastelPurple)
             }
 
@@ -80,8 +80,8 @@ struct MenuPopover: View {
                 store.toggleStamp(.now)
             } label: {
                 Text(stampedToday ? "오늘 도장 찍음 ✅" : "출근 도장 쾅 💥")
-                    .font(.system(size: 15, weight: .black, design: .rounded))
-                    .foregroundStyle(.black)
+                    .font(.system(size: Kitsch.s(15), weight: .black, design: Kitsch.design))
+                    .foregroundStyle(Kitsch.ink)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
             }
@@ -94,22 +94,22 @@ struct MenuPopover: View {
             } label: {
                 HStack(spacing: 6) {
                     Text(showCalendar ? "달력 접기" : "달력 펼치기 📅")
-                        .font(.system(size: 13, weight: .black, design: .rounded))
+                        .font(.system(size: Kitsch.s(13), weight: .black, design: Kitsch.design))
                     Image(systemName: showCalendar ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 11, weight: .black))
+                        .font(.system(size: Kitsch.s(11), weight: .black))
                 }
-                .foregroundStyle(.black)
+                .foregroundStyle(Kitsch.ink)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 9)
             }
-            .buttonStyle(StickerButtonStyle(fill: .white, cornerRadius: 14))
+            .buttonStyle(StickerButtonStyle(fill: Kitsch.card, cornerRadius: 14))
 
             if showCalendar {
                 calendarSection
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .foregroundStyle(.black)
+        .foregroundStyle(Kitsch.ink)
     }
 
     private var calendarSection: some View {
@@ -118,25 +118,25 @@ struct MenuPopover: View {
                 Button {
                     moveMonth(-1)
                 } label: {
-                    Image(systemName: "chevron.left").font(.system(size: 13, weight: .black)).padding(6)
+                    Image(systemName: "chevron.left").font(.system(size: Kitsch.s(13), weight: .black)).padding(6)
                 }
                 .buttonStyle(StickerButtonStyle(fill: Kitsch.yellow, cornerRadius: 10))
                 Spacer()
                 Text("\(String(displayedYear))년 \(displayedMonthNum)월")
-                    .font(.system(size: 15, weight: .black))
+                    .font(.system(size: Kitsch.s(15), weight: .black))
                 Spacer()
                 Button {
                     moveMonth(1)
                 } label: {
-                    Image(systemName: "chevron.right").font(.system(size: 13, weight: .black)).padding(6)
+                    Image(systemName: "chevron.right").font(.system(size: Kitsch.s(13), weight: .black)).padding(6)
                 }
                 .buttonStyle(StickerButtonStyle(fill: Kitsch.yellow, cornerRadius: 10))
             }
             CalendarGridView(store: store, month: displayedMonth)
         }
-        .foregroundStyle(.black)
+        .foregroundStyle(Kitsch.ink)
         .padding(12)
-        .stickerCard(.white, rotation: 0.6)
+        .stickerCard(Kitsch.card, rotation: 0.6)
     }
 
     private func moveMonth(_ offset: Int) {
@@ -165,12 +165,12 @@ struct MenuPopover: View {
 
         VStack(spacing: 6) {
             Text(phaseTitle(phase))
-                .font(.system(size: 13, weight: .heavy))
+                .font(.system(size: Kitsch.s(13), weight: .heavy))
                 .opacity(0.6)
             switch phase {
             case .working, .justFinished, .settled:
                 Text("+\(earned.wonString(secret: secret))")
-                    .font(.system(size: 34, weight: .black, design: .rounded))
+                    .font(.system(size: Kitsch.s(34), weight: .black, design: Kitsch.design))
                     .foregroundStyle(Kitsch.pink)
                     .contentTransition(.numericText())
                     .animation(.snappy(duration: 0.4), value: earned)
@@ -182,11 +182,11 @@ struct MenuPopover: View {
                     }
             case .restDay:
                 Text("0원도 힐링이면 OK")
-                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .font(.system(size: Kitsch.s(18), weight: .black, design: Kitsch.design))
                     .opacity(0.5)
             case .beforeWork, .commuting:
                 Text("오늘 \(store.todayWage.wonString(secret: secret)) 예정")
-                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .font(.system(size: Kitsch.s(18), weight: .black, design: Kitsch.design))
                     .opacity(0.5)
             }
             if phase == .working {
@@ -214,10 +214,10 @@ struct MenuPopover: View {
     private func statChip(title: String, value: String, fill: Color) -> some View {
         VStack(spacing: 3) {
             Text(title)
-                .font(.system(size: 11, weight: .bold))
+                .font(.system(size: Kitsch.s(11), weight: .bold))
                 .opacity(0.55)
             Text(value)
-                .font(.system(size: 14, weight: .black))
+                .font(.system(size: Kitsch.s(14), weight: .black))
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
         }
@@ -243,26 +243,26 @@ struct MacOnboarding: View {
     var body: some View {
         VStack(spacing: 14) {
             Text("💰 연봉 얼마 받음?")
-                .font(.system(size: 18, weight: .black, design: .rounded))
+                .font(.system(size: Kitsch.s(18), weight: .black, design: Kitsch.design))
 
             HStack(spacing: 6) {
                 TextField("1000", text: $salaryText)
                     .textFieldStyle(.plain)
                     .multilineTextAlignment(.trailing)
-                    .font(.system(size: 24, weight: .black, design: .rounded))
+                    .font(.system(size: Kitsch.s(24), weight: .black, design: Kitsch.design))
                 Text("만원")
-                    .font(.system(size: 14, weight: .black))
+                    .font(.system(size: Kitsch.s(14), weight: .black))
                     .opacity(0.5)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .stickerCard(.white, cornerRadius: 14)
+            .stickerCard(Kitsch.card, cornerRadius: 14)
 
             HStack(spacing: 12) {
                 DatePicker("출근", selection: $workStart, displayedComponents: .hourAndMinute)
                 DatePicker("퇴근", selection: $workEnd, displayedComponents: .hourAndMinute)
             }
-            .font(.system(size: 12, weight: .bold))
+            .font(.system(size: Kitsch.s(12), weight: .bold))
             .datePickerStyle(.field)
 
             Button {
@@ -272,8 +272,8 @@ struct MacOnboarding: View {
                 store.annualSalary = salaryManwon * 10_000
             } label: {
                 Text("시작하기 🚀")
-                    .font(.system(size: 15, weight: .black, design: .rounded))
-                    .foregroundStyle(.black)
+                    .font(.system(size: Kitsch.s(15), weight: .black, design: Kitsch.design))
+                    .foregroundStyle(Kitsch.ink)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
             }
@@ -281,7 +281,7 @@ struct MacOnboarding: View {
             .disabled(salaryManwon <= 0)
             .opacity(salaryManwon > 0 ? 1 : 0.5)
         }
-        .foregroundStyle(.black)
+        .foregroundStyle(Kitsch.ink)
     }
 }
 
@@ -300,51 +300,54 @@ struct MacSettings: View {
         VStack(spacing: 14) {
             HStack {
                 Text("⚙️ 설정")
-                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .font(.system(size: Kitsch.s(18), weight: .black, design: Kitsch.design))
                 Spacer()
             }
 
             HStack(spacing: 6) {
                 Text("연봉")
-                    .font(.system(size: 13, weight: .black))
+                    .font(.system(size: Kitsch.s(13), weight: .black))
                     .opacity(0.5)
                 TextField("1000", text: $salaryText)
                     .textFieldStyle(.plain)
                     .multilineTextAlignment(.trailing)
-                    .font(.system(size: 22, weight: .black, design: .rounded))
+                    .font(.system(size: Kitsch.s(22), weight: .black, design: Kitsch.design))
                 Text("만원")
-                    .font(.system(size: 13, weight: .black))
+                    .font(.system(size: Kitsch.s(13), weight: .black))
                     .opacity(0.5)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .stickerCard(.white, cornerRadius: 14)
+            .stickerCard(Kitsch.card, cornerRadius: 14)
 
             HStack(spacing: 12) {
                 DatePicker("출근", selection: $workStart, displayedComponents: .hourAndMinute)
                 DatePicker("퇴근", selection: $workEnd, displayedComponents: .hourAndMinute)
             }
-            .font(.system(size: 12, weight: .bold))
+            .font(.system(size: Kitsch.s(12), weight: .bold))
             .datePickerStyle(.field)
 
-            VStack(spacing: 8) {
-                Toggle(isOn: $store.isFormal) {
-                    Text("포멀 모드 👔 — 회사에서 안 튀는 디자인")
-                        .font(.system(size: 12, weight: .bold))
+            VStack(alignment: .leading, spacing: 10) {
+                Picker("테마", selection: $store.theme) {
+                    ForEach(AppTheme.allCases, id: \.self) { theme in
+                        Text(theme.label).tag(theme)
+                    }
                 }
+                .pickerStyle(.segmented)
+                .labelsHidden()
                 Toggle(isOn: $store.isSecret) {
                     Text("시크릿 모드 🕶️ — 금액 끝 3자리만 표시")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.system(size: Kitsch.s(12), weight: .bold))
                 }
+                .toggleStyle(.switch)
+                .controlSize(.small)
             }
-            .toggleStyle(.switch)
-            .controlSize(.small)
             .tint(Kitsch.pink)
             .padding(12)
-            .stickerCard(.white, cornerRadius: 14)
+            .stickerCard(Kitsch.card, cornerRadius: 14)
 
             Text("주말·공휴일 빼고 하루 \(store.todayWage.wonString)")
-                .font(.system(size: 11, weight: .bold))
+                .font(.system(size: Kitsch.s(11), weight: .bold))
                 .opacity(0.45)
 
             HStack(spacing: 10) {
@@ -352,12 +355,12 @@ struct MacSettings: View {
                     onDone()
                 } label: {
                     Text("취소")
-                        .font(.system(size: 14, weight: .black, design: .rounded))
-                        .foregroundStyle(.black)
+                        .font(.system(size: Kitsch.s(14), weight: .black, design: Kitsch.design))
+                        .foregroundStyle(Kitsch.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 11)
                 }
-                .buttonStyle(StickerButtonStyle(fill: .white, cornerRadius: 14))
+                .buttonStyle(StickerButtonStyle(fill: Kitsch.card, cornerRadius: 14))
 
                 Button {
                     let cal = WorkdayCalendar.calendar
@@ -367,8 +370,8 @@ struct MacSettings: View {
                     onDone()
                 } label: {
                     Text("저장 💾")
-                        .font(.system(size: 14, weight: .black, design: .rounded))
-                        .foregroundStyle(.black)
+                        .font(.system(size: Kitsch.s(14), weight: .black, design: Kitsch.design))
+                        .foregroundStyle(Kitsch.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 11)
                 }
@@ -377,7 +380,7 @@ struct MacSettings: View {
                 .opacity(salaryManwon > 0 ? 1 : 0.5)
             }
         }
-        .foregroundStyle(.black)
+        .foregroundStyle(Kitsch.ink)
         .onAppear {
             salaryText = "\(store.annualSalary / 10_000)"
             let cal = WorkdayCalendar.calendar
