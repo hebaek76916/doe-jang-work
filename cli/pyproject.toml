@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "workstamp"
+version = "0.1.0"
+description = "연봉 넣으면 터미널에서 실시간으로 돈이 오르는 출근도장 CLI 💸"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+keywords = ["salary", "ticker", "terminal", "motivation", "tmux"]
+
+[project.scripts]
+workstamp = "workstamp:main"
+
+[tool.setuptools]
+py-modules = ["workstamp"]
