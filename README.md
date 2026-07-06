@@ -1,3 +1,5 @@
+**한국어** | [English](README.en.md) | [日本語](README.ja.md) | [简体中文](README.zh-CN.md)
+
 # 출근도장 💸 WorkStamp
 
 > **연봉을 넣으면, 일하는 동안 돈이 실시간으로 오른다.**
